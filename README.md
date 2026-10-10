@@ -95,7 +95,7 @@ python --version
 Con Git:
 
 ```bash
-git clone <URL-DEL-REPOSITORIO> libreria
+git clone https://github.com/Cova97/django_app.git libreria
 cd libreria
 ```
 
