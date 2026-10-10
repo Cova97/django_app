@@ -1,0 +1,49 @@
+:root {
+  --marca: #2c3e66;
+  --marca-claro: #eef1f8;
+}
+
+.bg-marca { background-color: var(--marca); }
+.text-marca { color: var(--marca); }
+
+.btn-marca {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--marca);
+  --bs-btn-border-color: var(--marca);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #23314f;
+  --bs-btn-hover-border-color: #23314f;
+}
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.encabezado h1 { font-size: 1.6rem; margin: 0; }
+
+.tarjeta-dato .valor { font-size: 1.8rem; font-weight: 600; line-height: 1.1; }
+.tarjeta-dato .etiqueta { color: var(--bs-secondary-color); font-size: .875rem; }
+
+.libro { transition: box-shadow .15s ease; }
+.libro:hover { box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .08); }
+.libro .portada {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: var(--marca-claro);
+}
+.precio-anterior { text-decoration: line-through; color: var(--bs-secondary-color); font-size: .9rem; }
+
+.banda-promos {
+  background: linear-gradient(90deg, #fff4e5, #fff);
+  border: 1px solid #ffe0b2;
+}
+
+.table td, .table th { vertical-align: middle; }
+.linea-venta + .linea-venta { border-top: 1px dashed var(--bs-border-color); padding-top: .75rem; }

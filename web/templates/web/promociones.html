@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block titulo %}Promociones{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Promociones</h1>
+  {% if perms.ventas.add_promocion and user.is_staff %}
+    <a class="btn btn-marca" href="{% url 'admin:ventas_promocion_add' %}">+ Nueva promoción</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Nombre</th><th class="text-center">Descuento</th><th>Temporada</th><th>Aplica a</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for promo in promociones %}
+          <tr>
+            <td>{{ promo.nombre }}<div class="small text-muted">{{ promo.descripcion }}</div></td>
+            <td class="text-center fw-semibold">{{ promo.descuento_porcentaje|floatformat:"0" }}%</td>
+            <td>{{ promo.fecha_inicio|date:"d/m/Y" }} – {{ promo.fecha_fin|date:"d/m/Y" }}</td>
+            <td class="small">
+              {% for categoria in promo.categorias.all %}<span class="badge text-bg-light border">{{ categoria.nombre }}</span> {% endfor %}
+              {% for libro in promo.libros.all %}<span class="badge text-bg-light border">{{ libro.titulo }}</span> {% endfor %}
+              {% if not promo.categorias.all and not promo.libros.all %}Todo el catálogo{% endif %}
+            </td>
+            <td><span class="badge text-bg-{{ promo.estado.1 }}">{{ promo.estado.0 }}</span></td>
+            <td class="text-end">
+              {% if perms.ventas.change_promocion and user.is_staff %}
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin:ventas_promocion_change' promo.pk %}">Editar</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No hay promociones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

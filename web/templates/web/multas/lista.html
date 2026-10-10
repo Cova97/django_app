@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}Multas{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Multas</h1>
+  <div class="text-end">
+    <div class="small text-muted">Total por cobrar</div>
+    <div class="fs-4 fw-semibold text-warning">{{ total_pendiente|moneda }}</div>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link {% if estado == 'pendientes' %}active{% endif %}" href="?estado=pendientes">Pendientes</a></li>
+  <li class="nav-item"><a class="nav-link {% if estado == 'pagadas' %}active{% endif %}" href="?estado=pagadas">Pagadas</a></li>
+  <li class="nav-item"><a class="nav-link {% if estado == 'todas' %}active{% endif %}" href="?estado=todas">Todas</a></li>
+</ul>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Cliente</th><th>Libro</th><th class="text-center">Días de retraso</th><th class="text-end">Monto</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for multa in pagina %}
+          <tr>
+            <td>{% if perms.clientes.view_cliente %}<a href="{% url 'web:cliente_detalle' multa.prestamo.cliente.pk %}">{{ multa.prestamo.cliente }}</a>{% else %}{{ multa.prestamo.cliente }}{% endif %}</td>
+            <td>{{ multa.prestamo.libro.titulo }}</td>
+            <td class="text-center">{{ multa.dias_retraso }}</td>
+            <td class="text-end fw-semibold">{{ multa.monto|moneda }}</td>
+            <td>
+              {% if multa.pagada %}<span class="badge text-bg-light border">Pagada {{ multa.fecha_pago|date:"d/m/Y" }}</span>
+              {% else %}<span class="badge text-bg-warning">Pendiente</span>{% endif %}
+            </td>
+            <td class="text-end">
+              {% if not multa.pagada and perms.prestamos.change_multa %}
+                <form method="post" action="{% url 'web:multa_pagar' multa.pk %}"
+                      onsubmit="return confirm('¿Confirmas el cobro de {{ multa.monto|moneda }}?')">
+                  {% csrf_token %}
+                  <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+                  <button class="btn btn-sm btn-success" type="submit">Cobrar</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No hay multas en esta vista.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'web/_paginacion.html' %}
+{% endblock %}

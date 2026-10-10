@@ -1,0 +1,91 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Librería{% endblock %} · Librería</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-marca">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="{% url 'web:catalogo' %}">📚 Librería</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+              aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menu">
+        {% with nombre=request.resolver_match.url_name %}
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link {% if nombre == 'catalogo' %}active{% endif %}" href="{% url 'web:catalogo' %}">Catálogo</a></li>
+          {% if user.is_authenticated %}
+            <li class="nav-item"><a class="nav-link {% if nombre == 'panel' %}active{% endif %}" href="{% url 'web:panel' %}">Panel</a></li>
+            {% if perms.ventas.view_venta %}
+              <li class="nav-item"><a class="nav-link {% if 'venta' in nombre %}active{% endif %}" href="{% url 'web:ventas_lista' %}">Ventas</a></li>
+            {% endif %}
+            {% if perms.prestamos.view_prestamo %}
+              <li class="nav-item"><a class="nav-link {% if 'prestamo' in nombre %}active{% endif %}" href="{% url 'web:prestamos_lista' %}">Préstamos</a></li>
+            {% endif %}
+            {% if perms.prestamos.view_multa %}
+              <li class="nav-item"><a class="nav-link {% if 'multa' in nombre %}active{% endif %}" href="{% url 'web:multas_lista' %}">Multas</a></li>
+            {% endif %}
+            {% if perms.clientes.view_cliente %}
+              <li class="nav-item"><a class="nav-link {% if 'cliente' in nombre %}active{% endif %}" href="{% url 'web:clientes_lista' %}">Clientes</a></li>
+            {% endif %}
+            {% if perms.catalogo.view_libro %}
+              <li class="nav-item"><a class="nav-link {% if nombre == 'inventario' %}active{% endif %}" href="{% url 'web:inventario' %}">Inventario</a></li>
+            {% endif %}
+            {% if perms.ventas.view_promocion %}
+              <li class="nav-item"><a class="nav-link {% if nombre == 'promociones' %}active{% endif %}" href="{% url 'web:promociones' %}">Promociones</a></li>
+            {% endif %}
+          {% endif %}
+        </ul>
+        {% endwith %}
+        <ul class="navbar-nav">
+          {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ user.get_full_name|default:user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><span class="dropdown-item-text small text-muted">
+                  {% for grupo in user.groups.all %}{{ grupo.name }}{% if not forloop.last %}, {% endif %}{% empty %}{% if user.is_superuser %}Administrador{% else %}Sin rol{% endif %}{% endfor %}
+                </span></li>
+                {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">Administración</a></li>{% endif %}
+                <li><a class="dropdown-item" href="{% url 'password_change' %}">Cambiar contraseña</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                  </form>
+                </li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Acceso empleados</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4 flex-grow-1">
+    {% for mensaje in messages %}
+      <div class="alert alert-{% if mensaje.tags == 'error' %}danger{% else %}{{ mensaje.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ mensaje }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="border-top py-3 text-center text-muted small">
+    Librería · Ventas y préstamos
+  </footer>
+
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

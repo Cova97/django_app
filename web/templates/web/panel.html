@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}Panel{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Hola, {{ user.first_name|default:user.username }}</h1>
+  <div class="d-flex gap-2">
+    {% if perms.ventas.add_venta %}<a class="btn btn-marca" href="{% url 'web:venta_nueva' %}">+ Nueva venta</a>{% endif %}
+    {% if perms.prestamos.add_prestamo %}<a class="btn btn-outline-primary" href="{% url 'web:prestamo_nuevo' %}">+ Nuevo préstamo</a>{% endif %}
+  </div>
+</div>
+<p class="text-muted">{{ hoy|date:"l j \d\e F \d\e Y" }}</p>
+
+<div class="row g-3 mb-4">
+  {% if ventas_hoy %}
+    <div class="col-6 col-lg-3">
+      <a href="{% url 'web:ventas_lista' %}?desde={{ hoy|date:'Y-m-d' }}&hasta={{ hoy|date:'Y-m-d' }}" class="card tarjeta-dato text-decoration-none h-100">
+        <div class="card-body">
+          <div class="valor">{{ ventas_hoy.total|moneda }}</div>
+          <div class="etiqueta">{{ ventas_hoy.cantidad }} venta{{ ventas_hoy.cantidad|pluralize }} hoy</div>
+        </div>
+      </a>
+    </div>
+  {% endif %}
+  {% if prestamos_activos is not None %}
+    <div class="col-6 col-lg-3">
+      <a href="{% url 'web:prestamos_lista' %}" class="card tarjeta-dato text-decoration-none h-100">
+        <div class="card-body">
+          <div class="valor">{{ prestamos_activos }}</div>
+          <div class="etiqueta">préstamos activos</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6 col-lg-3">
+      <a href="{% url 'web:prestamos_lista' %}?estado=vencidos" class="card tarjeta-dato text-decoration-none h-100 {% if vencidos %}border-danger{% endif %}">
+        <div class="card-body">
+          <div class="valor {% if vencidos %}text-danger{% endif %}">{{ vencidos|length }}</div>
+          <div class="etiqueta">préstamos vencidos</div>
+        </div>
+      </a>
+    </div>
+  {% endif %}
+  {% if multas %}
+    <div class="col-6 col-lg-3">
+      <a href="{% url 'web:multas_lista' %}" class="card tarjeta-dato text-decoration-none h-100">
+        <div class="card-body">
+          <div class="valor {% if multas.cantidad %}text-warning{% endif %}">{{ multas.total|moneda }}</div>
+          <div class="etiqueta">{{ multas.cantidad }} multa{{ multas.cantidad|pluralize }} por cobrar</div>
+        </div>
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<div class="row g-4">
+  {% if vencidos %}
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header bg-danger-subtle fw-semibold">Préstamos vencidos</div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Cliente</th><th>Libro</th><th>Retraso</th><th>Multa estimada</th><th></th></tr></thead>
+            <tbody>
+              {% for prestamo in vencidos %}
+                <tr>
+                  <td><a href="{% url 'web:cliente_detalle' prestamo.cliente.pk %}">{{ prestamo.cliente }}</a></td>
+                  <td>{{ prestamo.libro.titulo }}</td>
+                  <td class="text-danger">{{ prestamo.dias_retraso }} día{{ prestamo.dias_retraso|pluralize }}</td>
+                  <td>{{ prestamo.multa_estimada|moneda }}</td>
+                  <td class="text-end">
+                    {% if perms.prestamos.change_prestamo %}
+                      <form method="post" action="{% url 'web:prestamo_devolver' prestamo.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Devolver</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="col-lg-5">
+    {% if promociones %}
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Promociones vigentes</div>
+        <ul class="list-group list-group-flush">
+          {% for promo in promociones %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ promo.nombre }}</span>
+              <span><span class="badge text-bg-warning">-{{ promo.descuento_porcentaje|floatformat:"0" }}%</span>
+                <span class="small text-muted">hasta {{ promo.fecha_fin|date:"d/m" }}</span></span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if poco_stock %}
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Poco stock para venta</div>
+        <ul class="list-group list-group-flush">
+          {% for libro in poco_stock %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ libro.titulo }}</span>
+              <span class="badge {% if libro.stock_venta %}text-bg-warning{% else %}text-bg-danger{% endif %}">{{ libro.stock_venta }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if ultimas_ventas %}
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header fw-semibold">Últimas ventas</div>
+        <ul class="list-group list-group-flush">
+          {% for venta in ultimas_ventas %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between" href="{% url 'web:venta_detalle' venta.pk %}">
+              <span>#{{ venta.pk }} · {{ venta.cliente }} <span class="small text-muted">{{ venta.fecha|date:"d/m/Y H:i" }}</span></span>
+              <span class="fw-semibold">{{ venta.total|moneda }}</span>
+            </a>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% if not perms.ventas.view_venta and not perms.prestamos.view_prestamo and not perms.clientes.view_cliente %}
+  <div class="alert alert-warning">Tu usuario aún no tiene un rol asignado. Pide a un gerente que te asigne uno.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% load static %}<!doctype html>
+{# Página independiente a propósito: si el error viene de la plantilla base, esta debe seguir funcionando. #}
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Error · Librería</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+</head>
+<body class="bg-light">
+  <div class="container text-center py-5">
+    <div class="display-1 fw-bold">500</div>
+    <h1 class="h3 mb-3">Algo salió mal</h1>
+    <p class="text-muted mb-4">Ocurrió un error inesperado. Ya quedó registrado; intenta de nuevo en un momento.</p>
+    <a class="btn btn-primary" href="/">Ir al inicio</a>
+  </div>
+</body>
+</html>

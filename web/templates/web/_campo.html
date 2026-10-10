@@ -1,0 +1,14 @@
+{% if campo.widget_type == 'checkbox' %}
+  <div class="form-check mb-3">
+    {{ campo }}
+    <label class="form-check-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+    {% for error in campo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+  </div>
+{% else %}
+  <div class="mb-3">
+    <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+    {{ campo }}
+    {% for error in campo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+  </div>
+{% endif %}

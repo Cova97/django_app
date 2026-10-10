@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block titulo %}Acceso empleados{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-sm-10 col-md-6 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3 text-center">Acceso empleados</h1>
+        {% if form.errors %}
+          <div class="alert alert-danger">Usuario o contraseña incorrectos.</div>
+        {% endif %}
+        {% if next and user.is_authenticated %}
+          <div class="alert alert-warning">Tu cuenta no tiene acceso a esa página.</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="id_username">Usuario</label>
+            <input class="form-control" type="text" name="username" id="id_username" autocomplete="username"
+                   value="{{ form.username.value|default:'' }}" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_password">Contraseña</label>
+            <input class="form-control" type="password" name="password" id="id_password"
+                   autocomplete="current-password" required>
+          </div>
+          <input type="hidden" name="next" value="{{ next }}">
+          <button type="submit" class="btn btn-marca w-100">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

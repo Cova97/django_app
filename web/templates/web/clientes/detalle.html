@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}{{ cliente }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>{{ cliente }} {% if not cliente.activo %}<span class="badge text-bg-secondary fs-6 align-middle">Inactivo</span>{% endif %}</h1>
+  <div class="d-flex gap-2">
+    {% if perms.prestamos.add_prestamo and cliente.activo %}
+      <a class="btn btn-outline-primary" href="{% url 'web:prestamo_nuevo' %}?cliente={{ cliente.pk }}">+ Préstamo</a>
+    {% endif %}
+    {% if perms.clientes.change_cliente %}
+      <a class="btn btn-outline-secondary" href="{% url 'web:cliente_editar' cliente.pk %}">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body row g-2">
+    <div class="col-md-4"><span class="text-muted">Email:</span> {{ cliente.email }}</div>
+    <div class="col-md-4"><span class="text-muted">Teléfono:</span> {{ cliente.telefono|default:"—" }}</div>
+    <div class="col-md-4"><span class="text-muted">Cliente desde:</span> {{ cliente.fecha_registro|date:"d/m/Y" }}</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% if prestamos is not None %}
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header fw-semibold">Préstamos y multas</div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Libro</th><th>Prestado</th><th>Estado</th><th>Multa</th></tr></thead>
+            <tbody>
+              {% for prestamo in prestamos %}
+                <tr>
+                  <td>{{ prestamo.libro.titulo }}</td>
+                  <td>{{ prestamo.fecha_prestamo|date:"d/m/Y" }}</td>
+                  <td>
+                    {% if not prestamo.activo %}<span class="badge text-bg-secondary">Devuelto</span>
+                    {% elif prestamo.vencido %}<span class="badge text-bg-danger">Vencido · {{ prestamo.dias_retraso }} d</span>
+                    {% else %}<span class="badge text-bg-success">Activo · vence {{ prestamo.fecha_limite|date:"d/m" }}</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if prestamo.multa %}
+                      {{ prestamo.multa.monto|moneda }}
+                      {% if prestamo.multa.pagada %}<span class="badge text-bg-light border">pagada</span>
+                      {% else %}<span class="badge text-bg-warning">pendiente</span>{% endif %}
+                    {% else %}—{% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-muted text-center py-3">Sin préstamos.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if ventas is not None %}
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header fw-semibold">Compras recientes</div>
+        <ul class="list-group list-group-flush">
+          {% for venta in ventas %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between" href="{% url 'web:venta_detalle' venta.pk %}">
+              <span>#{{ venta.pk }} <span class="small text-muted">{{ venta.fecha|date:"d/m/Y" }}</span></span>
+              <span class="fw-semibold">{{ venta.total|moneda }}</span>
+            </a>
+          {% empty %}
+            <li class="list-group-item text-muted">Sin compras.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}Préstamos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Préstamos</h1>
+  {% if perms.prestamos.add_prestamo %}<a class="btn btn-marca" href="{% url 'web:prestamo_nuevo' %}">+ Nuevo préstamo</a>{% endif %}
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  {% for clave, nombre in estados.items %}
+    <li class="nav-item">
+      <a class="nav-link {% if clave == estado %}active{% endif %} {% if clave == 'vencidos' %}text-danger{% endif %}"
+         href="?estado={{ clave }}">{{ nombre }}</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="get" class="row g-2 mb-3">
+  <input type="hidden" name="estado" value="{{ estado }}">
+  <div class="col-md-10">{{ filtro.q }}</div>
+  <div class="col-md-2 d-grid"><button class="btn btn-outline-secondary" type="submit">Buscar</button></div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Libro</th><th>Cliente</th><th>Prestado</th><th>Límite</th><th>Estado</th><th>Multa</th><th></th></tr></thead>
+      <tbody>
+        {% for prestamo in pagina %}
+          <tr>
+            <td>{{ prestamo.libro.titulo }}</td>
+            <td>{% if perms.clientes.view_cliente %}<a href="{% url 'web:cliente_detalle' prestamo.cliente.pk %}">{{ prestamo.cliente }}</a>{% else %}{{ prestamo.cliente }}{% endif %}</td>
+            <td>{{ prestamo.fecha_prestamo|date:"d/m/Y" }}</td>
+            <td>{{ prestamo.fecha_limite|date:"d/m/Y" }}</td>
+            <td>
+              {% if not prestamo.activo %}
+                <span class="badge text-bg-secondary">Devuelto {{ prestamo.fecha_devolucion|date:"d/m" }}</span>
+              {% elif prestamo.vencido %}
+                <span class="badge text-bg-danger">Vencido · {{ prestamo.dias_retraso }} día{{ prestamo.dias_retraso|pluralize }}</span>
+              {% else %}
+                <span class="badge text-bg-success">Activo</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if prestamo.multa %}
+                {{ prestamo.multa.monto|moneda }}
+                {% if prestamo.multa.pagada %}<span class="badge text-bg-light border">pagada</span>{% else %}<span class="badge text-bg-warning">pendiente</span>{% endif %}
+              {% elif prestamo.vencido %}
+                <span class="text-muted">{{ prestamo.multa_estimada|moneda }} (estimada)</span>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td class="text-end">
+              {% if prestamo.activo and perms.prestamos.change_prestamo %}
+                <form method="post" action="{% url 'web:prestamo_devolver' prestamo.pk %}"
+                      onsubmit="return confirm('¿Registrar la devolución de &quot;{{ prestamo.libro.titulo|escapejs }}&quot;?')">
+                  {% csrf_token %}
+                  <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Devolver</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No hay préstamos en esta vista.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'web/_paginacion.html' %}
+{% endblock %}

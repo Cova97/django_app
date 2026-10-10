@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}Inventario{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Inventario</h1>
+  {% if perms.catalogo.add_libro and user.is_staff %}
+    <a class="btn btn-marca" href="{% url 'admin:catalogo_libro_add' %}">+ Nuevo libro</a>
+  {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-6">{{ filtro.q }}</div>
+  <div class="col-md-4">{{ filtro.categoria }}</div>
+  <div class="col-md-2 d-grid"><button class="btn btn-outline-secondary" type="submit">Buscar</button></div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Título</th><th>Categoría</th><th class="text-end">Precio</th>
+          <th class="text-center">Stock venta</th><th class="text-center">Préstamo (disp./total)</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for libro in pagina %}
+          <tr>
+            <td>{{ libro.titulo }}<div class="small text-muted">{{ libro.autor }} · ISBN {{ libro.isbn }}</div></td>
+            <td>{{ libro.categoria.nombre }}</td>
+            <td class="text-end">{{ libro.precio_venta|moneda }}</td>
+            <td class="text-center">
+              <span class="badge {% if libro.stock_venta == 0 %}text-bg-danger{% elif libro.stock_venta < 3 %}text-bg-warning{% else %}text-bg-light border{% endif %}">{{ libro.stock_venta }}</span>
+            </td>
+            <td class="text-center">{{ libro.disponibles }} /{{ libro.ejemplares_prestamo }}</td>
+            <td class="text-end">
+              {% if perms.catalogo.change_libro and user.is_staff %}
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin:catalogo_libro_change' libro.pk %}">Editar</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No hay libros con esa búsqueda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'web/_paginacion.html' %}
+{% endblock %}

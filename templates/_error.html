@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ codigo }}{% endblock %}
+{% block contenido %}
+<div class="text-center py-5">
+  <div class="display-1 fw-bold text-marca">{{ codigo }}</div>
+  <h1 class="h3 mb-3">{{ titulo_error }}</h1>
+  <p class="text-muted mb-4">{{ mensaje_error }}</p>
+  <a class="btn btn-marca" href="{% url 'web:catalogo' %}">Ir al inicio</a>
+  {% if user.is_authenticated %}<a class="btn btn-outline-secondary ms-2" href="{% url 'web:panel' %}">Ir al panel</a>{% endif %}
+</div>
+{% endblock %}

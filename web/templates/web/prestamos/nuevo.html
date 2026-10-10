@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block titulo %}Nuevo préstamo{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Nuevo préstamo</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'web:prestamos_lista' %}">Cancelar</a>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include 'web/_errores_form.html' %}
+          {% for campo in formulario %}{% include 'web/_campo.html' %}{% endfor %}
+          <button type="submit" class="btn btn-marca">Registrar préstamo</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6 mt-3 mt-lg-0">
+    <div class="alert alert-light border small">
+      <strong>Reglas del préstamo</strong>
+      <ul class="mb-0 mt-2">
+        <li>El cliente no debe tener multas pendientes ni préstamos vencidos.</li>
+        <li>Máximo de préstamos simultáneos por cliente según la configuración.</li>
+        <li>Debe haber ejemplares disponibles del libro.</li>
+        <li>Cada día de retraso al devolver genera una multa.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

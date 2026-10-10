@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %}Nueva venta{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Nueva venta</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'web:ventas_lista' %}">Cancelar</a>
+</div>
+
+<form method="post" novalidate id="form-venta">
+  {% csrf_token %}
+  {% include 'web/_errores_form.html' %}
+  {% for error in lineas.non_form_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card mb-3">
+        <div class="card-body">
+          {% include 'web/_campo.html' with campo=formulario.cliente %}
+          {% if perms.clientes.add_cliente %}
+            <a class="small" href="{% url 'web:cliente_nuevo' %}" target="_blank">+ Registrar cliente nuevo</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header fw-semibold">Libros</div>
+        <div class="card-body" id="lineas">
+          {{ lineas.management_form }}
+          {% for linea in lineas %}
+            <div class="row g-2 align-items-start linea-venta">
+              <div class="col-sm-8">{% include 'web/_campo.html' with campo=linea.libro %}</div>
+              <div class="col-8 col-sm-3">{% include 'web/_campo.html' with campo=linea.cantidad %}</div>
+              <div class="col-4 col-sm-1 pt-sm-4">
+                <button type="button" class="btn btn-outline-danger quitar-linea" title="Quitar">✕</button>
+              </div>
+              <div class="col-12 small text-muted estimado-linea"></div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="card-footer">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="agregar-linea">+ Agregar libro</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card position-sticky" style="top: 1rem">
+        <div class="card-body">
+          <div class="text-muted small">Total estimado</div>
+          <div class="fs-2 fw-semibold" id="total-estimado">$0.00</div>
+          <p class="small text-muted">Las promociones vigentes se aplican automáticamente.
+            El total final se confirma al registrar.</p>
+          <button type="submit" class="btn btn-marca w-100">Registrar venta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<template id="plantilla-linea">
+  <div class="row g-2 align-items-start linea-venta">
+    <div class="col-sm-8">{% include 'web/_campo.html' with campo=lineas.empty_form.libro %}</div>
+    <div class="col-8 col-sm-3">{% include 'web/_campo.html' with campo=lineas.empty_form.cantidad %}</div>
+    <div class="col-4 col-sm-1 pt-sm-4">
+      <button type="button" class="btn btn-outline-danger quitar-linea" title="Quitar">✕</button>
+    </div>
+    <div class="col-12 small text-muted estimado-linea"></div>
+  </div>
+</template>
+
+{{ precios|json_script:"precios" }}
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/venta.js' %}"></script>{% endblock %}

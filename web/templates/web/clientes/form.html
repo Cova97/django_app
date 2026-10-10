@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block titulo %}{% if cliente.pk %}Editar cliente{% else %}Nuevo cliente{% endif %}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>{% if cliente.pk %}Editar {{ cliente }}{% else %}Nuevo cliente{% endif %}</h1>
+  <a class="btn btn-outline-secondary" href="{% if cliente.pk %}{% url 'web:cliente_detalle' cliente.pk %}{% else %}{% url 'web:clientes_lista' %}{% endif %}">Cancelar</a>
+</div>
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include 'web/_errores_form.html' %}
+          {% for campo in formulario %}{% include 'web/_campo.html' %}{% endfor %}
+          <button type="submit" class="btn btn-marca">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

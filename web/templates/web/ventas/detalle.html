@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load web_extras %}
+{% block titulo %}Venta #{{ venta.pk }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Venta #{{ venta.pk }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'web:ventas_lista' %}">← Ventas</a>
+    <button class="btn btn-outline-secondary" onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body row">
+    <div class="col-md-6"><span class="text-muted">Cliente:</span>
+      {% if perms.clientes.view_cliente %}<a href="{% url 'web:cliente_detalle' venta.cliente.pk %}">{{ venta.cliente }}</a>{% else %}{{ venta.cliente }}{% endif %}
+    </div>
+    <div class="col-md-6 text-md-end"><span class="text-muted">Fecha:</span> {{ venta.fecha|date:"d/m/Y H:i" }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Libro</th><th class="text-center">Cantidad</th><th class="text-end">Precio</th><th>Promoción</th><th class="text-end">Subtotal</th></tr></thead>
+      <tbody>
+        {% for detalle in detalles %}
+          <tr>
+            <td>{{ detalle.libro.titulo }}</td>
+            <td class="text-center">{{ detalle.cantidad }}</td>
+            <td class="text-end">{{ detalle.precio_unitario|moneda }}</td>
+            <td>
+              {% if detalle.promocion %}
+                <span class="badge text-bg-warning">{{ detalle.promocion.nombre }} -{{ detalle.descuento_porcentaje|floatformat:"0" }}%</span>
+              {% elif detalle.descuento_porcentaje %}
+                <span class="badge text-bg-secondary">-{{ detalle.descuento_porcentaje|floatformat:"0" }}%</span>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td class="text-end">{{ detalle.subtotal|moneda }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot><tr><th colspan="4" class="text-end">Total</th><th class="text-end fs-5">{{ venta.total|moneda }}</th></tr></tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}
