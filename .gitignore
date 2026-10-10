@@ -14,7 +14,6 @@ staticfiles/
 
 # Variables de entorno y secretos
 .env
-venv
 # Editores y sistema
 .vscode/
 .idea/
